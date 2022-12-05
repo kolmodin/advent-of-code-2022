@@ -1,67 +1,47 @@
+open Base
+open Stdio
+
 exception Parse_error of string
 
 let compartments line =
   let len = String.length line in
-  assert (len mod 2 == 0);
-  (String.sub line 0 (len / 2), String.sub line (len / 2) (len / 2))
+  assert (len % 2 = 0);
+  ( String.sub line ~pos:0 ~len:(len / 2),
+    String.sub line ~pos:(len / 2) ~len:(len / 2) )
 
-let priority c =
+let priority (c : char) =
   match c with
-  | c when c >= 'a' && c <= 'z' -> Char.code c - Char.code 'a' + 1
-  | c when c >= 'A' && c <= 'Z' -> Char.code c - Char.code 'A' + 27
+  | c when Char.between c ~low:'a' ~high:'z' ->
+      Char.to_int c - Char.to_int 'a' + 1
+  | c when Char.between c ~low:'A' ~high:'Z' ->
+      Char.to_int c - Char.to_int 'A' + 27
   | c -> raise (Parse_error ("No priority for: " ^ Char.escaped c))
 
-module SC = Set.Make (Char)
-
 let in_all lst =
-  let sets = List.map (fun str -> SC.of_seq (String.to_seq str)) lst in
-  let shared = List.fold_left SC.inter (List.hd sets) (List.tl sets) in
-  match List.of_seq (SC.to_seq shared) with [ x ] -> Some x | _ -> None
+  let sets =
+    List.map lst ~f:(fun str -> Set.of_list (module Char) (String.to_list str))
+  in
+  match sets with
+  | [] -> None
+  | s :: ss ->
+      let shared = List.fold_left ss ~init:s ~f:Set.inter in
+      List.hd (Set.to_list shared)
 
 let read_file_to_single_string filename =
-  In_channel.with_open_text filename In_channel.input_all
+  In_channel.with_file ~binary:false filename ~f:In_channel.input_all
 
-let split_lines str =
-  let rec drop_last_if_empty (lst : string list) =
-    match lst with
-    | [] -> []
-    | "" :: [] -> []
-    | x :: [] ->
-        print_endline "WARNING: last line of input not empty";
-        [ x ]
-    | x :: xs -> x :: drop_last_if_empty xs
-  in
-  drop_last_if_empty (String.split_on_char '\n' str)
-
-let sumi = List.fold_left Int.add 0
-
-let rec take n lst =
-  match lst with
-  | _ when n <= 0 -> []
-  | [] -> []
-  | x :: xs -> x :: take (n - 1) xs
-
-let rec drop n lst =
-  match lst with
-   | _ when n <= 0 -> lst
-   | [] -> []
-   | _ :: xs -> drop (n - 1) xs
-
-let rec chunks n lst =
-  match lst with [] -> [] | _ -> take n lst :: chunks n (drop n lst)
+let sumi (lst : int list) = List.fold_left lst ~init:0 ~f:Int.( + )
 
 let () =
-  let lines = split_lines (read_file_to_single_string "day03.txt") in
+  let lines = String.split_lines (read_file_to_single_string "day03.txt") in
   let prios =
-    Fun.flip List.map lines @@ fun ln ->
-    let a, b = compartments ln in
-    let (Some c) = in_all [ a; b ] in
-    priority c
+    List.map lines ~f:(fun ln ->
+        let a, b = compartments ln in
+        priority (Option.value_exn (in_all [ a; b ])))
   in
-  print_endline ("Part 1: " ^ string_of_int (sumi prios));
+  print_endline ("Part 1: " ^ Int.to_string (sumi prios));
   let prios2 =
-    Fun.flip List.map (chunks 3 lines) @@ fun group ->
-    let (Some c) = in_all group in
-    priority c
+    List.map (List.chunks_of lines ~length:3) ~f:(fun group ->
+        priority (Option.value_exn (in_all group)))
   in
-  print_endline ("Part 2: " ^ string_of_int (sumi prios2))
+  print_endline ("Part 2: " ^ Int.to_string (sumi prios2))
