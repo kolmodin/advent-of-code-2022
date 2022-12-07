@@ -3,9 +3,6 @@ open Stdio
 
 exception Parse_error of string
 
-let read_file_to_single_string filename =
-  In_channel.with_file ~binary:false filename ~f:In_channel.input_all
-
 type file = { size : int; name : string; path : string list }
 
 let discover_files =
@@ -61,12 +58,6 @@ let rec add_to_tree dir ~path ~name ~size =
 
 let sumi = List.fold ~init:0 ~f:Int.( + )
 
-let rec iter_files prefix dir ~f =
-  Map.iteri dir.files ~f:(fun ~key:name ~data:size ->
-      f (prefix ^ "/" ^ name) size);
-  Map.iteri dir.sub_dirs ~f:(fun ~key:name ~data:sub_dir ->
-      iter_files (prefix ^ "/" ^ name) sub_dir ~f)
-
 let rec iter_dirs path dir ~f =
   f path dir;
   Map.iteri dir.sub_dirs ~f:(fun ~key:name ~data:sub_dir ->
@@ -100,7 +91,7 @@ let find_smallest_dir_larger_than dir larger_or_eq_than =
   !smallest
 
 let () =
-  let lines = String.split_lines (read_file_to_single_string "day07.txt") in
+  let lines = Aoc.Input.read_input_day_as_lines 7 in
   let files = discover_files lines in
   let dir = build_tree files in
   print_endline ("Part 1: " ^ Int.to_string (count_dirs dir));

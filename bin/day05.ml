@@ -5,9 +5,6 @@ exception Parse_error of string
 
 type move_instruction = { count : int; src : int; dst : int }
 
-let read_file_to_single_string filename =
-  In_channel.with_file ~binary:false filename ~f:In_channel.input_all
-
 let stack_names = List.range 1 10
 
 let parse_stacks lines =
@@ -53,13 +50,13 @@ let move_part2 stacks instr =
 
 let print_part str instrs stacks mover =
   let part1_stack = List.fold instrs ~init:stacks ~f:mover in
-  print_endline str;
+  print_string str;
   Map.to_alist ~key_order:`Increasing part1_stack
   |> List.iter ~f:(fun (_, st) -> print_string (Char.escaped (List.hd_exn st)));
   print_endline ""
 
 let () =
-  let lines = String.split_lines (read_file_to_single_string "day05.txt") in
+  let lines = Aoc.Input.read_input_day_as_lines 5 in
   let init_config_str =
     List.take_while lines ~f:(String.is_prefix ~prefix:"[")
   in
@@ -68,7 +65,6 @@ let () =
     |> List.filter ~f:(String.is_prefix ~prefix:"move")
     |> List.map ~f:parse_move_line
   in
-  List.iter init_config_str ~f:print_endline;
   let init_stacks = parse_stacks init_config_str in
   print_part "Part 1: " move_instrs init_stacks move_part1;
   print_part "Part 2: " move_instrs init_stacks move_part2

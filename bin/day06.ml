@@ -9,9 +9,6 @@ let rec windows str len : char list list =
     String.to_list (String.sub str ~pos:0 ~len)
     :: windows (String.sub str ~pos:1 ~len:(String.length str - 1)) len
 
-let read_file_to_single_string filename =
-  In_channel.with_file ~binary:false filename ~f:In_channel.input_all
-
 let solve str n =
   let wins = windows str n in
   match
@@ -22,7 +19,7 @@ let solve str n =
   | None -> raise (Solve_error "no solution found")
 
 let () =
-  let lines = String.split_lines (read_file_to_single_string "day06.txt") in
+  let lines = Aoc.Input.read_input_day_as_lines 6 in
   List.iter lines ~f:(fun ln ->
       print_endline ("Part 1: " ^ Int.to_string (solve ln 4)));
   List.iter lines ~f:(fun ln ->

@@ -9,7 +9,7 @@ let compartments line =
   ( String.sub line ~pos:0 ~len:(len / 2),
     String.sub line ~pos:(len / 2) ~len:(len / 2) )
 
-let priority (c : char) =
+let priority c =
   match c with
   | c when Char.between c ~low:'a' ~high:'z' ->
       Char.to_int c - Char.to_int 'a' + 1
@@ -27,13 +27,10 @@ let in_all lst =
       let shared = List.fold_left ss ~init:s ~f:Set.inter in
       List.hd (Set.to_list shared)
 
-let read_file_to_single_string filename =
-  In_channel.with_file ~binary:false filename ~f:In_channel.input_all
-
 let sumi (lst : int list) = List.fold_left lst ~init:0 ~f:Int.( + )
 
 let () =
-  let lines = String.split_lines (read_file_to_single_string "day03.txt") in
+  let lines = Aoc.Input.read_input_day_as_lines 3 in
   let prios =
     List.map lines ~f:(fun ln ->
         let a, b = compartments ln in
