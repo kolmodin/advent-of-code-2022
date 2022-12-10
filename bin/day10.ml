@@ -41,7 +41,7 @@ let render_as_lines pixels =
   pixels |> List.chunks_of ~length:40 |> List.map ~f:String.of_char_list
 
 let () =
-  let instrs = Aoc.Input.read_input_day_as_lines 10 |> List.map ~f:parse_line in
+  let instrs = Aoc.Input.get_input_parsed 10 ~parser:parse_line in
   let xvals = instrs |> exec ~init:1 in
   let strengths = signal_strengths xvals in
   let sampled_strengths =

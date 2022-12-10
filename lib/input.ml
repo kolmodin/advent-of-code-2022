@@ -13,3 +13,6 @@ let read_input_day day =
   | filename :: _ -> read_file_to_single_string filename
 
 let read_input_day_as_lines day = String.split_lines (read_input_day day)
+
+let get_input_parsed day ~parser =
+  read_input_day day |> String.split_lines |> List.map ~f:parser
