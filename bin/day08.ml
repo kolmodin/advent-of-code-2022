@@ -78,7 +78,9 @@ let best_scenic_score board =
        (List.map (board_all_pos board) ~f:(scenic_score board))
        ~compare:Int.compare)
 
-let read_board () = Aoc.Input.get_input_board 8 ~char_parser:(fun c -> Int.of_string (Char.to_string c))
+let read_board () =
+  Aoc.Input.get_input_board 8 ~char_parser:(fun c ->
+      Int.of_string (Char.to_string c))
 
 let () =
   let board = read_board () in
