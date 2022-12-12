@@ -16,3 +16,6 @@ let read_input_day_as_lines day = String.split_lines (read_input_day day)
 
 let get_input_parsed day ~parser =
   read_input_day day |> String.split_lines |> List.map ~f:parser
+
+let get_input_board day ~char_parser =
+  read_input_day day |> String.split_lines |> Board.of_lines ~char_parser
