@@ -4,7 +4,6 @@ open Aoc
 
 exception Parse_error of string
 
-type cell = Rock | Sand
 type falling_coord = Falling of Coord.t | Invalid | FallingAbyss of int
 type resting_or_abyss = Resting of Coord.t | Abyss of int
 
