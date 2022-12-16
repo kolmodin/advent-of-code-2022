@@ -1,3 +1,4 @@
 (library
  (name aoc)
+ (preprocess (pps ppx_jane))
  (libraries base stdio))
