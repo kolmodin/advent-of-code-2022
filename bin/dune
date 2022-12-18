@@ -11,7 +11,8 @@
   day11
   day12
   day13
-  day14)
+  day14
+  day15)
  (public_names
   day03
   day04
@@ -24,6 +25,8 @@
   day11
   day12
   day13
-  day14)
- (preprocess  (pps ppx_jane))
+  day14
+  day15)
+ (preprocess
+  (pps ppx_jane))
  (libraries aoc base stdio))
