@@ -1,6 +1,5 @@
 open Base
 open Stdio
-include Option.Let_syntax
 
 exception Parse_error of string
 
@@ -50,17 +49,8 @@ type state = {
   time_left : int;
   flow_score : int;
   visited : int;
-  path : string list;
 }
 [@@deriving sexp]
-
-let compare_state a b = compare a.flow_score b.flow_score
-
-let rec visit ~next state =
-  Option.value ~default:state
-    (List.max_elt
-       (List.map (next state) ~f:(visit ~next))
-       ~compare:compare_state)
 
 let () =
   let valves = Aoc.Input.get_input_parsed 16 ~parser:parse_line in
@@ -81,54 +71,53 @@ let () =
     |> Hashtbl.of_alist_exn (module String)
   in
   let find_visited_bitmap = Hashtbl.find_exn all_state_bitmaps in
-  let max_score = ref 0 in
-  let next ht s =
-    List.filter_map all_valid_rates ~f:(fun (dst, flow_rate) ->
-        max_score := max !max_score s.flow_score;
-        Hashtbl.update ht s.visited ~f:(function
-          | None -> s.flow_score
-          | Some old -> max old s.flow_score);
+
+  let rec traverse_all s ht =
+    Hashtbl.update ht s.visited ~f:(function
+      | None -> s.flow_score
+      | Some old -> max old s.flow_score);
+    List.iter all_valid_rates ~f:(fun (dst, flow_rate) ->
         let new_time_left = s.time_left - find_time_src_dst s.name dst - 1 in
         let visited = find_visited_bitmap dst in
         let new_visited = Int.bit_or s.visited visited in
-        if new_time_left <= 0 || Int.bit_and s.visited visited > 0 then None
-        else
-          Some
-            {
-              name = dst;
-              time_left = new_time_left;
-              flow_score = s.flow_score + (flow_rate * new_time_left);
-              visited = new_visited;
-              path = dst :: s.path;
-            })
+        if new_time_left > 0 && Int.bit_and s.visited visited = 0 then
+          Fn.ignore
+          @@ traverse_all
+               {
+                 name = dst;
+                 time_left = new_time_left;
+                 flow_score = s.flow_score + (flow_rate * new_time_left);
+                 visited = new_visited;
+               }
+               ht);
+    ht
   in
-  let part1_ht = Hashtbl.create (module Int) in
-  let part2_ht = Hashtbl.create (module Int) in
-  let _ =
-    visit ~next:(next part1_ht)
-      { name = "AA"; time_left = 30; flow_score = 0; visited = 0; path = [] }
+
+  let part1_ht =
+    traverse_all
+      { name = "AA"; time_left = 30; flow_score = 0; visited = 0 }
+      (Hashtbl.create (module Int))
   in
-  printf "Part 1: %d\n" !max_score;
-  let _ =
-    visit ~next:(next part2_ht)
-      { name = "AA"; time_left = 26; flow_score = 0; visited = 0; path = [] }
+  let part2_ht =
+    traverse_all
+      { name = "AA"; time_left = 26; flow_score = 0; visited = 0 }
+      (Hashtbl.create (module Int))
   in
+  let max_score =
+    Hashtbl.to_alist part1_ht |> List.map ~f:snd |> List.reduce_exn ~f:Int.max
+  in
+  printf "Part 1: %d\n" max_score;
   let max_with_elephant =
     (* Is there any nicer way to do this which is also fast? *)
-    let open Bigarray in
     let source = Hashtbl.to_alist part2_ht |> Array.of_list in
-    let visited =
-      Array1.of_array Bigarray.int Bigarray.c_layout (Array.map source ~f:fst)
-    in
-    let flow =
-      Array1.of_array Bigarray.int Bigarray.c_layout (Array.map source ~f:snd)
-    in
+    let visited = Array.map source ~f:fst in
+    let flow = Array.map source ~f:snd in
 
     let max_flow = ref 0 in
     for i = 0 to Array.length source - 1 do
       for j = 0 to Array.length source - 1 do
-        if Int.( land ) (Array1.get visited i) (Array1.get visited j) = 0 then
-          let new_flow = Array1.get flow i + Array1.get flow j in
+        if Int.( land ) (Array.get visited i) (Array.get visited j) = 0 then
+          let new_flow = Array.get flow i + Array.get flow j in
           if new_flow > !max_flow then max_flow := new_flow
       done
     done;
