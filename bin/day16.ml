@@ -44,21 +44,16 @@ let floyd_warshall nodes =
                   Option.merge old costVia ~f:Int.min))));
   htl
 
-type state = {
-  name : string;
-  time_left : int;
-  flow_score : int;
-  visited : int;
-}
+type state = { name : string; time_left : int; flow_score : int; visited : int }
 [@@deriving sexp]
 
 let () =
   let valves = Aoc.Input.get_input_parsed 16 ~parser:parse_line in
-  let table =
+  let cost_table =
     List.concat_map valves ~f:(fun valve ->
         List.map valve.tunnels_to ~f:(fun dst -> (valve.name, dst, 1)))
   in
-  let resolved = floyd_warshall table in
+  let resolved = floyd_warshall cost_table in
   let all_valid_rates =
     valves
     |> List.filter ~f:(fun v -> v.rate > 0)
@@ -79,7 +74,6 @@ let () =
     List.iter all_valid_rates ~f:(fun (dst, flow_rate) ->
         let new_time_left = s.time_left - find_time_src_dst s.name dst - 1 in
         let visited = find_visited_bitmap dst in
-        let new_visited = Int.bit_or s.visited visited in
         if new_time_left > 0 && Int.bit_and s.visited visited = 0 then
           Fn.ignore
           @@ traverse_all
@@ -87,7 +81,7 @@ let () =
                  name = dst;
                  time_left = new_time_left;
                  flow_score = s.flow_score + (flow_rate * new_time_left);
-                 visited = new_visited;
+                 visited = Int.bit_or s.visited visited;
                }
                ht);
     ht
