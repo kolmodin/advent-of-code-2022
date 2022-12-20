@@ -6,21 +6,8 @@ exception Parse_error of string
 
 type interval = { left : int; right : int } [@@deriving sexp, compare]
 
-let numbers ln =
-  let is_num c = Char.is_digit c || Char.equal c '-' in
-  let rec strip xs = take (List.drop_while xs ~f:(Fn.compose not is_num))
-  and take xs =
-    match xs with
-    | [] -> []
-    | xs ->
-        let prefix, rest = List.split_while xs ~f:is_num in
-        let num = Int.of_string (String.of_char_list prefix) in
-        num :: strip rest
-  in
-  strip (String.to_list ln)
-
 let parse_line ln =
-  match numbers ln with
+  match Input.numbers ln with
   | [ a; b; c; d ] -> (Coord.of_x_y a b, Coord.of_x_y c d)
   | _ -> raise (Parse_error "wrong number of numbers")
 

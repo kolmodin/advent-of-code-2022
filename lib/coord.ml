@@ -22,8 +22,8 @@ let negate coord = of_x_y (-coord.x) (-coord.y)
 let scale coord n = of_x_y (coord.x * n) (coord.y * n)
 
 let norm coord =
-  let x = if coord.x = 0 then 0 else coord.x / Int.abs(coord.x) in
-  let y = if coord.y = 0 then 0 else coord.y / Int.abs(coord.y) in
+  let x = if coord.x = 0 then 0 else coord.x / Int.abs coord.x in
+  let y = if coord.y = 0 then 0 else coord.y / Int.abs coord.y in
   of_x_y x y
 
 let within_bounds (top_left, bottom_right) pos =
