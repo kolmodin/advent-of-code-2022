@@ -72,7 +72,7 @@ let resolve_eq lhs rhs =
     let open Int64 in
     match exp with
     | EVar _ -> value
-    | EValue exp -> raise (Error "expected EVar")
+    | EValue _ -> raise (Error "expected EVar")
     | EBinOp (bin_op, EValue v1, e2) -> (
         match bin_op with
         | Add -> resolve (value - v1) e2
