@@ -12,10 +12,7 @@ type eop = EValue of int64 | EBinOp of bin_op * eop * eop | EVar of string
 [@@deriving sexp]
 
 let parse_line ln =
-  match
-    Aoc.Input.split_by ln ~keep:(fun c ->
-        not (List.mem [ ' '; ':' ] c ~equal:Char.equal))
-  with
+  match Aoc.Input.split_by_chars ln ~chars:[ ' '; ':' ] with
   | [ name; value ] -> { name; op = Value (Int64.of_string value) }
   | [ name; sub1; bin_op; sub2 ] ->
       let bop =

@@ -8,8 +8,8 @@ type valve = { name : string; rate : int; tunnels_to : string list }
 
 let parse_line ln : valve =
   match
-    Aoc.Input.split_by ln ~keep:(fun c ->
-        not (List.mem [ ' '; '='; ';'; ',' ] c ~equal:Char.equal))
+    Aoc.Input.split_by ln ~sep:(fun c ->
+        List.mem [ ' '; '='; ';'; ',' ] c ~equal:Char.equal)
   with
   | "Valve" :: name :: _has :: _flow :: _rate :: rate_str :: _tunnels :: _leads
     :: _to :: _valves :: tunnels_to ->

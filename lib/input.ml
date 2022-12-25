@@ -20,17 +20,21 @@ let get_input_parsed day ~parser =
 let get_input_board day ~char_parser =
   read_input_day day |> String.split_lines |> Board.of_lines ~char_parser
 
-let split_by ln ~keep =
-  let rec strip xs = take (List.drop_while xs ~f:(Fn.compose not keep))
+let split_by ln ~sep =
+  let rec strip xs = take (List.drop_while xs ~f:sep)
   and take xs =
     match xs with
     | [] -> []
     | xs ->
-        let prefix, rest = List.split_while xs ~f:keep in
+        let prefix, rest = List.split_while xs ~f:(Fn.compose not sep) in
         String.of_char_list prefix :: strip rest
   in
   strip (String.to_list ln)
 
+let split_by_chars ln ~chars =
+  split_by ln ~sep:(fun c ->
+      Array.mem (List.to_array chars) c ~equal:Char.equal)
+
 let numbers ln =
-  split_by ln ~keep:(fun c -> Char.is_digit c || Char.equal c '-')
+  split_by ln ~sep:(fun c -> not (Char.is_digit c || Char.equal c '-'))
   |> List.map ~f:Int.of_string
