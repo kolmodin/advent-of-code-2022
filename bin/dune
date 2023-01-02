@@ -16,6 +16,7 @@
   day16
   day17
   day18
+  day19
   day21)
  (public_names
   day03
@@ -34,6 +35,7 @@
   day16
   day17
   day18
+  day19
   day21)
  (preprocess
   (pps ppx_jane))
